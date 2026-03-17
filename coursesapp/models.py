@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from ckeditor.fields import RichTextField
+from django_ckeditor_5.fields import CKEditor5Field
 from django.core.validators import ValidationError, MinValueValidator, MaxValueValidator
 
 
@@ -25,7 +25,7 @@ class Module(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='modules')
     title = models.CharField(max_length=100)
     order = models.IntegerField()
-    content = RichTextField()
+    content = CKEditor5Field(config_name='extends')
 
 
 class Enrollment(models.Model):

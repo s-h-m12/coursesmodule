@@ -1,0 +1,138 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог курсов</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/course_styles.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Каталог курсов</h1>
+        <p style="text-align: center; color: #666;">Выберите курс для профессионального роста</p>
+
+        <!-- Статистика -->
+        <div class="stats">
+            <div class="stat-card">
+                <i class="fas fa-book-open"></i>
+                <div class="stat-number">{{ total_courses }}</div>
+                <div>Всего курсов</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-users"></i>
+                <div class="stat-number">{{ total_students }}</div>
+                <div>Студентов</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <div class="stat-number">{{ total_mentors }}</div>
+                <div>Преподавателей</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-check-circle"></i>
+                <div class="stat-number">{{ total_tests_passed }}</div>
+                <div>Тестов пройдено</div>
+            </div>
+        </div>
+
+        <!-- Фильтры -->
+        <div class="filters">
+            <form method="get" class="filter-form">
+                <select name="difficulty">
+                    <option value="">Все уровни</option>
+                    <option value="beginner" {% if selected_difficulty == 'beginner' %}selected{% endif %}>Начальный</option>
+                    <option value="intermediate" {% if selected_difficulty == 'intermediate' %}selected{% endif %}>Средний</option>
+                    <option value="advanced" {% if selected_difficulty == 'advanced' %}selected{% endif %}>Продвинутый</option>
+                </select>
+
+                <select name="mentor">
+                    <option value="">Все преподаватели</option>
+                    {% for mentor in mentors %}
+                    <option value="{{ mentor.id }}" {% if selected_mentor == mentor.id %}selected{% endif %}>
+                        {{ mentor.last_name }} {{ mentor.first_name|first }}.
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <input type="text" name="search" placeholder="Поиск курсов..." value="{{ search_query }}">
+
+                <button type="submit">
+                    <i class="fas fa-search"></i> Найти
+                </button>
+            </form>
+        </div>
+
+        <!-- Список курсов -->
+        <div class="courses">
+            {% for course in courses %}
+            <div class="course-card">
+                <div class="course-image">
+                    <img src="{% if course.image %}{{ course.image.url }}{% else %}{% static 'img/placeholder.png' %}{% endif %}" alt="{{ course.title }}">
+                    <div class="difficulty {{ course.difficulty }}">{{ course.get_difficulty_display }}</div>
+                </div>
+
+                <div class="course-content">
+                    <h3>{{ course.title }}</h3>
+                    <p>{{ course.description|truncatechars:100 }}</p>
+
+                    <div class="meta">
+                        <span><i class="far fa-clock"></i> {{ course.duration }} ч</span>
+                        <span><i class="fas fa-users"></i> {{ course.enrollment_set.count }} студ.</span>
+                    </div>
+
+                    <div class="mentor">
+                        <div class="avatar">{{ course.created_by.first_name|first }}{{ course.created_by.last_name|first }}</div>
+                        <div class="mentor-info">
+                            <h4>{{ course.created_by.last_name }} {{ course.created_by.first_name }}</h4>
+                            <p>Преподаватель</p>
+                        </div>
+                    </div>
+
+                    <div class="modules">
+                        {% for module in course.modules.all|slice:":3" %}
+                        <div><i class="fas fa-check-circle"></i> {{ module.title|truncatechars:40 }}</div>
+                        {% endfor %}
+                        {% if course.modules.count > 3 %}
+                        <div class="modules-more">+ еще {{ course.modules.count|add:"-3" }} модулей</div>
+                        {% endif %}
+                    </div>
+
+                    <span class="badge"><i class="fas fa-puzzle-piece"></i> {{ course.modules.all|length }} тестов</span>
+                </div>
+
+                <div class="card-footer">
+                    <span class="rating"><i class="fas fa-star"></i> 4.8</span>
+                    <a href="#" class="btn" onclick="alert('Функция записи будет доступна позже'); return false;">Записаться</a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty">
+                <i class="fas fa-search"></i>
+                <p>Курсы не найдены</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Преподаватели -->
+        <h2>Наши преподаватели</h2>
+        <div class="mentors">
+            {% for mentor in mentors %}
+            <div class="mentor-card">
+                <div class="avatar-lg">{{ mentor.first_name|first }}{{ mentor.last_name|first }}</div>
+                <div class="mentor-card-name">{{ mentor.last_name }} {{ mentor.first_name }}</div>
+                <div class="mentor-card-specialization">{{ mentor.courses_created.all|length }} курсов</div>
+                <div class="mentor-rating">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star-half-alt"></i>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
